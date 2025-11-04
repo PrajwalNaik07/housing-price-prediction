@@ -52,7 +52,7 @@ housing-price-predection/
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/housing-price-predection.git
+git clone https://github.com/<your-username>/housing-price-prediction.git
 cd housing-price-predection/app
 ```
 
