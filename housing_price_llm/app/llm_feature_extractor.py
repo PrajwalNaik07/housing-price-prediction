@@ -1,35 +1,55 @@
-from transformers import pipeline
-import re
 import json
+import re
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-extractor = pipeline("text2text-generation", model="google/flan-t5-small")
+model_name = "microsoft/phi-2"
 
-def extract_features(user_input: str):
-    prompt = f"""
-You are an assistant that extracts house features for price prediction.
-Return valid JSON with these keys only:
-MSZoning, LotArea, OverallQual, OverallCond, YearBuilt, HouseStyle, BedroomAbvGr, FullBath, GrLivArea, Neighborhood, GarageCars.
+extractor = pipeline(
+    "text-generation",
+    model=model_name,
+    device_map="auto",
+    max_new_tokens=200,
+    temperature=0.2,
+)
 
-Rules:
-- LotArea and GrLivArea must be in square feet (numeric)
-- OverallQual and OverallCond between 1 and 10
-- YearBuilt four digits
-- MSZoning one of ['RL','RM','RH','FV','C']
-- Neighborhood must be one from: CollgCr, OldTown, NridgHt, Sawyer, Gilbert, Timber
-- HouseStyle one of ['1Story','2Story','1.5Fin','SLvl','SFoyer']
+def truncate(text, max_chars=500):
+    """Avoids token overflow by safely truncating input."""
+    return text[:max_chars]
 
-Text: "{user_input}"
-"""
+def repair_json(text):
+    text = text.strip()
+    start = text.find("{")
+    end = text.rfind("}") + 1
 
+    if start == -1 or end == -1:
+        return {}
 
-    response = extractor(prompt, max_new_tokens=150)[0]['generated_text']
-    
-    # Clean up and enforce valid JSON structure
+    text = text[start:end]
+
+    text = re.sub(r",\s*}", "}", text)
+    text = re.sub(r"(\w+):", r'"\1":', text)
+
     try:
-        json_data = re.search(r'\{.*\}', response, re.DOTALL)
-        if json_data:
-            return json.loads(json_data.group(0))
-        else:
-            return {}
+        return json.loads(text)
     except:
         return {}
+
+def extract_features_with_llm(description):
+    description = truncate(description)  # ←★ Fix token overflow
+
+    prompt = f"""
+Extract ONLY the following fields as JSON:
+MSZoning, LotArea, OverallQual, OverallCond, YearBuilt, HouseStyle,
+BedroomAbvGr, FullBath, GrLivArea, Neighborhood, GarageCars.
+
+Return JSON only.
+
+Description: {description}
+
+JSON:
+"""
+
+    raw = extractor(prompt)[0]["generated_text"]
+    cleaned = repair_json(raw)
+
+    return cleaned

@@ -1,39 +1,64 @@
 import streamlit as st
 from predictor import predict_price
 
-# Set page configuration
-st.set_page_config(page_title="🏠 Housing Price Predictor", layout="wide")
+st.set_page_config(page_title="House Price Predictor", layout="wide")
 
-# App title and description
 st.title("🏡 Intelligent Housing Price Prediction System")
-st.markdown("""
-This app uses **Linear Regression** for predicting house prices  
-and a **Large Language Model (LLM)** (from Hugging Face) to extract features from natural language input.  
-Describe your house naturally, and get an intelligent, human-like price prediction.
-""")
+st.write("Provide the house details below to get a price prediction using a trained Linear Regression model.")
 
-# User input section
-st.markdown("### 🏘️ Describe the house")
-user_input = st.text_area(
-    "Example: 'A 3 bedroom 2 bath 2-story home built in 2010 in College Creek with a garage'",
-    height=150
-)
+# ----------- Input Form Layout ---------------
 
-# When the user clicks Submit
-if st.button("🔍 Submit"):
-    if user_input.strip():
-        with st.spinner("Analyzing description and predicting price..."):
-            result = predict_price(user_input)
+st.header("🏘️ Enter House Details")
 
-        # Create a clear and formatted output container
-        with st.container():
-            st.markdown(f"### 🏠 Estimated Price: ${result['predicted_price']:,.2f}")
-            st.markdown("### 🔍 Extracted Features:")
-            st.json(result['extracted_features'])
+col1, col2, col3 = st.columns(3)
 
-    else:
-        st.warning("Please enter a house description before submitting.")
+with col1:
+    mszoning = st.selectbox("MSZoning", ["RL", "RM", "RH", "C", "FV"])
+    overallqual = st.slider("Overall Quality (1–10)", 1, 10, 5)
+    overallcond = st.slider("Overall Condition (1–10)", 1, 10, 5)
+    garagecars = st.number_input("Garage Cars", 0, 4, 1)
 
-# Add a Clear button for convenience
-if st.button("🧹 Clear"):
-    st.experimental_rerun()
+with col2:
+    lotarea = st.number_input("Lot Area (sq ft)", 1000, 50000, 7000)
+    yearbuilt = st.number_input("Year Built", 1800, 2025, 2000)
+    bedrooms = st.number_input("Bedrooms Above Ground", 1, 10, 3)
+    fullbath = st.number_input("Full Bathrooms", 1, 4, 2)
+
+with col3:
+    grlivarea = st.number_input("Above Ground Living Area (sq ft)", 400, 6000, 1500)
+    housestyle = st.selectbox("House Style", [
+        "1Story", "1.5Fin", "1.5Unf",
+        "2Story", "2.5Fin", "2.5Unf",
+        "SLvl", "SFoyer"
+    ])
+
+    neighborhood = st.selectbox("Neighborhood", [
+        "OldTown", "CollgCr", "Veenker", "Somerst", "Crawfor", "Gilbert",
+        "NAmes", "Sawyer", "SawyerW", "Timber", "BrkSide", "NridgHt",
+        "NoRidge", "Edwards"
+    ])
+
+
+# ----------- Predict Button ---------------
+
+if st.button("Predict Price"):
+    features = {
+        "MSZoning": mszoning,
+        "LotArea": lotarea,
+        "OverallQual": overallqual,
+        "OverallCond": overallcond,
+        "YearBuilt": yearbuilt,
+        "HouseStyle": housestyle,
+        "BedroomAbvGr": bedrooms,
+        "FullBath": fullbath,
+        "GrLivArea": grlivarea,
+        "Neighborhood": neighborhood,
+        "GarageCars": garagecars
+    }
+
+    result = predict_price(features)
+
+    st.success(f"🏠 Estimated House Price: **${result['predicted_price']:,.2f}**")
+
+    with st.expander("🔍 Input Features Used"):
+        st.json(result["features_used"])
