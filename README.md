@@ -1,6 +1,6 @@
 # 🏡 House Price Prediction App
 
-A simple and interactive Streamlit application that predicts house prices using a trained **CatBoost Regressor** model on the Ames Housing dataset.
+A simple and interactive Streamlit application that predicts house prices using a trained **CatBoost Regressor** model on the Kaggle California Housing Price Dataset.
 
 Users can input property details such as zoning, lot size, quality rating, living area, and neighborhood.  
 The system returns an estimated house price along with the exact features used for prediction.
