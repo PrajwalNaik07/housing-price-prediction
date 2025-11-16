@@ -1,31 +1,64 @@
+# predictor.py
 import joblib
 import pandas as pd
+from catboost import Pool
 
-# Load your trained model
-model = joblib.load('../models/catboost_price_model.pkl')
+# Load the trained model
+model = joblib.load("../models/catboost_price_model.pkl")
 
-def predict_price(features: dict):
+# Specify categorical feature indices (based on your training order)
+CAT_FEATURES = [0, 5, 9]   # Example: MSZoning, HouseStyle, Neighborhood
+
+
+def predict_price(features: dict) -> float:
     """
-    Takes a dictionary of structured inputs and predicts house price.
+    Predicts house price given a dictionary of features.
+    
+    Args:
+        features (dict): {
+            "MSZoning": "RL",
+            "LotArea": 8000,
+            "OverallQual": 6,
+            ...
+        }
 
-    Expected keys:
-    MSZoning, LotArea, OverallQual, OverallCond, YearBuilt,
-    HouseStyle, BedroomAbvGr, FullBath, GrLivArea,
-    Neighborhood, GarageCars
+    Returns:
+        float: Predicted house price
     """
 
-    # Convert input to DataFrame
+    # Convert dict → DataFrame
     df = pd.DataFrame([features])
 
-    # Ensure all columns expected by model exist
-    missing_cols = set(model.feature_names_in_) - set(df.columns)
-    for col in missing_cols:
-        df[col] = 0
+    # Ensure correct column order
+    df = df[[
+        "MSZoning", "LotArea", "OverallQual", "OverallCond",
+        "YearBuilt", "HouseStyle", "BedroomAbvGr", "FullBath",
+        "GrLivArea", "Neighborhood", "GarageCars"
+    ]]
 
-    # Predict price
-    predicted = float(model.predict(df)[0])
+    # Wrap with CatBoost Pool
+    pool = Pool(df, cat_features=CAT_FEATURES)
 
-    return {
-        "predicted_price": predicted,
-        "features_used": features
-    }
+    # Predict
+    prediction = model.predict(pool)[0]
+
+    return float(prediction)
+
+
+# # Example usage (you can remove this during deployment)
+# if __name__ == "__main__":
+#     sample = {
+#         "MSZoning": "RL",
+#         "LotArea": 9000,
+#         "OverallQual": 6,
+#         "OverallCond": 5,
+#         "YearBuilt": 2010,
+#         "HouseStyle": "2Story",
+#         "BedroomAbvGr": 3,
+#         "FullBath": 2,
+#         "GrLivArea": 1800,
+#         "Neighborhood": "CollgCr",
+#         "GarageCars": 2
+#     }
+
+#     print("Predicted Price:", predict_price(sample))
