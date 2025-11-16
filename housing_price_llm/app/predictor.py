@@ -1,21 +1,28 @@
 import joblib
 import pandas as pd
 
-# Load model
-model = joblib.load('../models/linear_regression.pkl')
+# Load your trained model
+model = joblib.load('../models/catboost_price_model.pkl')
 
 def predict_price(features: dict):
-    """Predict house price from structured input."""
+    """
+    Takes a dictionary of structured inputs and predicts house price.
 
-    # Convert to DataFrame
+    Expected keys:
+    MSZoning, LotArea, OverallQual, OverallCond, YearBuilt,
+    HouseStyle, BedroomAbvGr, FullBath, GrLivArea,
+    Neighborhood, GarageCars
+    """
+
+    # Convert input to DataFrame
     df = pd.DataFrame([features])
 
-    # Add missing columns (required by the model)
-    missing = set(model.feature_names_in_) - set(df.columns)
-    for col in missing:
+    # Ensure all columns expected by model exist
+    missing_cols = set(model.feature_names_in_) - set(df.columns)
+    for col in missing_cols:
         df[col] = 0
 
-    # Predict
+    # Predict price
     predicted = float(model.predict(df)[0])
 
     return {
