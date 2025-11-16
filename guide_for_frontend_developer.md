@@ -40,8 +40,7 @@
 
 ## Output Format
 
-```
-json
+```json
 {
   "predicted_price": 198858.01
 }
@@ -50,8 +49,7 @@ Just a single number — easy for UI rendering.
 
 ## Sample Input
 
-```
-json
+```json
 {
         "MSZoning": "RL",
         "LotArea": 9000,
@@ -70,14 +68,12 @@ json
 ## Steps to start the FastAPI
 
 1. Navigate to the `/app` directory:
-```
-bash
+```bash
 cd housing_price_llm/app
 ```
 
 2. Execute the command
-```
-bash
+```bash
 uvicorn api:app --host 0.0.0.0 --port 8000
 ```
 
@@ -92,16 +88,14 @@ Now the API is active.
 
 ### Execution of API
 
-```
-bash
+```bash
 POST http://yourserver:8000/predict
 Content-Type: application/json
 ```
 
 Example curl command:
 
-```
-bash
+```bash
 curl -X POST \
   http://localhost:8000/predict \
   -H "Content-Type: application/json" \
@@ -122,8 +116,7 @@ curl -X POST \
 
 ### HTTP Status Codes & Meaning
 
-```
-bash
+```bash
 200 OK → Successful prediction  
 400 Bad Request → Missing field / invalid value  
 422 Validation Error → Wrong data format  
