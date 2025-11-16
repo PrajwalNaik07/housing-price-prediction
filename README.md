@@ -59,6 +59,22 @@ housing-price-predection/
 
 ## ▶️ How to Run the App
 
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/housing-price-prediction.git
+cd housing-price-predection/app
+```
+
+### 2️⃣ Create a Virtual Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate   # On macOS/Linux
+venv\Scripts\activate      # On Windows
+```
+
+
 ### 1️⃣ Install Dependencies
 ```bash
 pip install -r requirements.txt
