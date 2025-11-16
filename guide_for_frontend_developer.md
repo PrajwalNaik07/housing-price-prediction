@@ -89,7 +89,7 @@ Now the API is active.
 ### Execution of API
 
 ```bash
-POST http://yourserver:8000/predict
+POST http://localhost:8000/predict
 Content-Type: application/json
 ```
 
