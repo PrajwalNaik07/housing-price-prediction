@@ -64,7 +64,7 @@ housing-price-predection/
 ```bash
 git clone https://github.com/<your-username>/housing-price-prediction.git
 git checkout CatBoost
-cd housing-price-predection/app
+cd housing_price_llm/app
 ```
 
 ### 2️⃣ Create a Virtual Environment
