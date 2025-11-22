@@ -63,6 +63,7 @@ housing-price-predection/
 
 ```bash
 git clone https://github.com/<your-username>/housing-price-prediction.git
+git checkout CatBoost
 cd housing-price-predection/app
 ```
 
@@ -75,17 +76,17 @@ venv\Scripts\activate      # On Windows
 ```
 
 
-### 1️⃣ Install Dependencies
+### 3️⃣ Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
-### 2️⃣ Run Streamlit App
+### 4️⃣ Run Streamlit App
 ```bash
 cd app
 streamlit run app.py
 ```
 
-### 3️⃣ Open in Browser
+### 5️⃣ Open in Browser
 ```bash
 http://localhost:8501
 ```
