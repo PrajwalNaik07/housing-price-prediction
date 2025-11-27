@@ -2,13 +2,16 @@ import streamlit as st
 import joblib
 from catboost import Pool
 import pandas as pd
+import os
 
 # ===============================
 # Load CatBoost Model
 # ===============================
 @st.cache_resource
 def load_model():
-    return joblib.load("catboost_price_model.pkl")
+    model_path = os.path.join(os.path.dirname(__file__), "../models/catboost_price_model.pkl")
+    model_path = os.path.abspath(model_path)
+    return joblib.load(model_path)
 
 model = load_model()
 
