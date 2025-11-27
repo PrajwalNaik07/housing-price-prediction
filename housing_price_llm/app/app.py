@@ -8,7 +8,7 @@ import pandas as pd
 # ===============================
 @st.cache_resource
 def load_model():
-    return joblib.load("../models/catboost_price_model.pkl")
+    return joblib.load("catboost_price_model.pkl")
 
 model = load_model()
 
