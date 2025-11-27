@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>House Price Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .input-style {
+      padding: 10px;
+      width: 100%;
+      background: #1f1f1f;
+      border: 1px solid #3f3f3f;
+      border-radius: 8px;
+      color: white;
+    }
+    /* Style for the range slider track/thumb */
+    input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 10px;
+        background: #3f3f3f;
+        outline: none;
+        opacity: 0.7;
+        transition: opacity .15s;
+        border-radius: 5px;
+    }
+    input[type="range"]:hover {
+        opacity: 1;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3b82f6; /* blue-600 */
+        cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3b82f6;
+        cursor: pointer;
+    }
+
+    .sidebar {
+      background: #0d0d0d;
+      width: 260px;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      overflow-y: auto;
+      border-right: 1px solid #2b2b2b;
+    }
+    .expander {
+      background: #1f1f1f;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+
+<body class="bg-black text-white">
+
+  <div class="sidebar">
+    <h2 class="text-xl font-bold mb-4 text-blue-400">📘 Feature Guide</h2>
+
+    <div class="space-y-3">
+      <div class="expander" onclick="toggleGuide('g1')">🏠 MSZoning</div>
+      <div id="g1" class="hidden pl-4 text-sm text-gray-300">
+        Higher density zoning → lower price.
+      </div>
+
+      <div class="expander" onclick="toggleGuide('g2')">📏 LotArea</div>
+      <div id="g2" class="hidden pl-4 text-sm text-gray-300">
+        Larger plots → higher value.
+      </div>
+
+      <div class="expander" onclick="toggleGuide('g3')">⭐ OverallQual</div>
+      <div id="g3" class="hidden pl-4 text-sm text-gray-300">
+        Biggest driver of price besides size.
+      </div>
+
+      <div class="expander" onclick="toggleGuide('g4')">📐 GrLivArea</div>
+      <div id="g4" class="hidden pl-4 text-sm text-gray-300">
+        Most important numeric feature.
+      </div>
+
+      <div class="expander" onclick="toggleGuide('g5')">📍 Neighborhood</div>
+      <div id="g5" class="hidden pl-4 text-sm text-gray-300">
+        Location strongly impacts value.
+      </div>
+    </div>
+  </div>
+
+  <div class="ml-[280px] p-12">
+    
+    <h1 class="text-4xl font-bold text-blue-400 mb-8">
+      🏠 California House Price Prediction (CatBoost Model)
+    </h1>
+
+    <div class="grid grid-cols-2 gap-6">
+
+      <div>
+        <label for="MSZoning">🏠 Zoning Classification</label>
+        <select id="MSZoning" class="input-style" help="Defines how the land can be used. RL = most common residential zone.">
+          <option value="RL">Residential Low Density (RL)</option>
+          <option value="RM">Residential Medium Density (RM)</option>
+          <option value="RH">Residential High Density (RH)</option>
+          <option value="C">Commercial (C)</option>
+          <option value="FV">Floating Village (FV)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="LotArea">📏 Lot Size (sq ft)</label>
+        <input id="LotArea" type="number" min="500" max="50000" step="100" value="7500" class="input-style" help="Total area of the land parcel.">
+      </div>
+
+      <div>
+        <label for="OverallQual">⭐ Overall Quality (1–10)</label>
+        <div class="input-style flex items-center justify-between p-2">
+            <span class="text-sm text-gray-400">Current Value:</span>
+            <span id="OverallQualValue" class="text-blue-400 font-semibold text-lg">5</span>
+        </div>
+        <input id="OverallQual" type="range" min="1" max="10" step="1" value="5" class="mt-2" 
+          oninput="document.getElementById('OverallQualValue').innerText = this.value" help="Quality of materials and finish. One of the strongest predictors.">
+      </div>
+
+      <div>
+        <label for="OverallCond">🛠 Condition Rating (1–10)</label>
+        <div class="input-style flex items-center justify-between p-2">
+            <span class="text-sm text-gray-400">Current Value:</span>
+            <span id="OverallCondValue" class="text-blue-400 font-semibold text-lg">5</span>
+        </div>
+        <input id="OverallCond" type="range" min="1" max="10" step="1" value="5" class="mt-2"
+          oninput="document.getElementById('OverallCondValue').innerText = this.value" help="Reflects the house's general maintenance and condition.">
+      </div>
+
+      <div>
+        <label for="YearBuilt">🏗 Year Built</label>
+        <input id="YearBuilt" type="number" min="1990" max="2028" value="2000" class="input-style" help="Newer homes typically have higher value.">
+      </div>
+
+      <div>
+        <label for="HouseStyle">🏡 House Style</label>
+        <select id="HouseStyle" class="input-style" help="Architectural style of the home.">
+          <option value="1Story">One Story (1Story)</option>
+          <option value="2Story">Two Story (2Story)</option>
+          <option value="SLvl">Split Level (SLvl)</option>
+          <option value="SFoyer">Split Foyer (SFoyer)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="BedroomAbvGr">🛏 Bedrooms (Above Ground)</label>
+        <input id="BedroomAbvGr" type="number" min="1" max="10" value="3" class="input-style" help="Only above-ground bedrooms count.">
+      </div>
+
+      <div>
+        <label for="FullBath">🛁 Full Bathrooms</label>
+        <input id="FullBath" type="number" min="1" max="5" value="2" class="input-style" help="Total number of full bathrooms (shower/bath included).">
+      </div>
+
+      <div>
+        <label for="GrLivArea">📐 Living Area (sq ft)</label>
+        <input id="GrLivArea" type="number" min="300" max="6000" value="1500" class="input-style" help="Above-ground finished square footage.">
+      </div>
+
+      <div>
+        <label for="GarageCars">🚗 Garage Capacity (Cars)</label>
+        <input id="GarageCars" type="number" min="1" max="4" value="2" class="input-style" help="Number of cars that fit in the garage.">
+      </div>
+
+      <div class="col-span-2">
+        <label for="Neighborhood">🌍 Neighborhood</label>
+        <select id="Neighborhood" class="input-style" help="Neighborhood strongly affects pricing.">
+          <option value="CollgCr">College Creek (CollgCr)</option>
+          <option value="Crawfor">Crawford (Crawfor)</option>
+          <option value="OldTown">Old Town (OldTown)</option>
+          <option value="NrdgHt">Northridge Heights (NridgHt)</option>
+          <option value="NoRidge">Northridge (NoRidge)</option>
+          <option value="Veenker">Veenker</option>
+        </select>
+      </div>
+    </div>
+
+    <button onclick="predict()" 
+      class="mt-8 w-full bg-blue-600 hover:bg-blue-700 p-4 text-lg rounded-lg">
+      🔮 Predict Price
+    </button>
+
+    <h2 id="output" class="text-3xl mt-8 font-bold text-green-400"></h2>
+
+    <div class="mt-10">
+      <div class="expander" onclick="toggleGuide('jsonBox')">
+        🔍 View All Input Features Used
+      </div>
+      <pre id="jsonBox" class="hidden bg-[#111] p-4 rounded-lg mt-2"></pre>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleGuide(id) {
+      const x = document.getElementById(id);
+      x.classList.toggle("hidden");
+    }
+
+    // --- Function to check if a value is within range ---
+    function checkRange(id, min, max, name) {
+        const input = document.getElementById(id);
+        const value = Number(input.value);
+
+        // Check if the input is a valid number and within range
+        if (isNaN(value) || value < min || value > max) {
+            alert(`⚠️ Error: ${name} must be a number between ${min} and ${max}. Please correct the value.`);
+            input.focus();
+            return false;
+        }
+        return true;
+    }
+
+    async function predict() {
+      const outputElement = document.getElementById("output");
+      
+      // 1. --- MANUAL VALIDATION CHECKS (UPDATED RANGES) ---
+      if (!checkRange("LotArea", 500, 50000, "Lot Size (sq ft)")) return;
+      if (!checkRange("YearBuilt", 1990, 2028, "Year Built")) return; // CHANGED
+      if (!checkRange("GrLivArea", 300, 6000, "Living Area (sq ft)")) return;
+      if (!checkRange("OverallQual", 1, 10, "Overall Quality")) return;
+      if (!checkRange("OverallCond", 1, 10, "Condition Rating")) return;
+      if (!checkRange("BedroomAbvGr", 1, 10, "Bedrooms")) return; // CHANGED
+      if (!checkRange("FullBath", 1, 5, "Full Bathrooms")) return; // CHANGED
+      if (!checkRange("GarageCars", 1, 4, "Garage Capacity (Cars)")) return; // CHANGED
+
+
+      // 2. --- GATHER INPUTS (only runs if validation passes) ---
+      const data = {
+        MSZoning: document.getElementById("MSZoning").value,
+        LotArea: Number(document.getElementById("LotArea").value),
+        OverallQual: Number(document.getElementById("OverallQual").value),
+        OverallCond: Number(document.getElementById("OverallCond").value),
+        YearBuilt: Number(document.getElementById("YearBuilt").value),
+        HouseStyle: document.getElementById("HouseStyle").value,
+        BedroomAbvGr: Number(document.getElementById("BedroomAbvGr").value),
+        FullBath: Number(document.getElementById("FullBath").value),
+        GrLivArea: Number(document.getElementById("GrLivArea").value),
+        Neighborhood: document.getElementById("Neighborhood").value,
+        GarageCars: Number(document.getElementById("GarageCars").value)
+      };
+
+      // Set JSON Preview
+      document.getElementById("jsonBox").innerText = JSON.stringify(data, null, 2);
+      document.getElementById("jsonBox").classList.remove("hidden");
+
+      // 3. --- FETCH REQUEST ---
+      try {
+          const res = await fetch("http://localhost:8000/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+          
+          if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+          }
+
+          const r = await res.json();
+          outputElement.innerText = "🏡 Estimated House Price: $" + Number(r.predicted_price).toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+          });
+          outputElement.classList.add("text-green-400");
+          outputElement.classList.remove("text-red-500");
+      } catch (error) {
+          console.error("Prediction failed:", error);
+          outputElement.innerText = "⚠️ Error: Could not connect to prediction service on http://localhost:8000/predict";
+          outputElement.classList.remove("text-green-400");
+          outputElement.classList.add("text-red-500");
+      }
+    }
+  </script>
+
+</body>
+</html>
