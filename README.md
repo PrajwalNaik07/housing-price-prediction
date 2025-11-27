@@ -134,6 +134,8 @@ The API is responsible for loading the CatBoost model and serving predictions on
 
   You should see output indicating the server is running on http://127.0.0.1:8000. Keep this terminal window open and running.
 
+---
+
 ### Run the Web Interface (Frontend)
 
 The frontend is a simple HTML file that makes requests to the API running in the previous step.
